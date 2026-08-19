@@ -1,0 +1,269 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String
+  name          String
+  role          Role     @default(OWNER)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  events        Event[]   @relation("OwnerEvents")
+  rsvps         RSVP[]
+  guestbook     GuestbookMessage[]
+  songVotes     SongVote[]
+  suggestions   SongSuggestion[]
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  OWNER
+}
+
+model Event {
+  id                String   @id @default(cuid())
+  slug              String   @unique
+  title             String
+  type              EventType
+  host              String?
+  description       String?
+  story             Json?
+  coverImage        String?
+  profileImage      String?
+  startDate         DateTime
+  endDate           DateTime?
+  startTime         String?
+  endTime           String?
+  timezone          String    @default("UTC")
+  venueName         String?
+  venueAddress      String?
+  venueMapUrl       String?
+  contactPhone      String?
+  contactEmail      String?
+  status            EventStatus @default(DRAFT)
+  privacy           Privacy   @default(PUBLIC)
+  themeId           String?
+  theme             Json?
+  sections          Json
+  bgMusic           String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  ownerId           String
+  owner             User      @relation("OwnerEvents", fields: [ownerId], references: [id])
+
+  galleries         Gallery[]
+  videos            Video[]
+  schedules         ScheduleItem[]
+  weddingParty      WeddingPartyMember[]
+  rsvps             RSVP[]
+  guestbookMessages GuestbookMessage[]
+  songSuggestions   SongSuggestion[]
+
+  @@index([slug])
+  @@index([type])
+  @@index([status])
+  @@map("events")
+}
+
+enum EventType {
+  WEDDING
+  BIRTHDAY
+  GRADUATION
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum Privacy {
+  PUBLIC
+  PRIVATE
+}
+
+model Gallery {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  coverImage  String?
+  displayOrder Int     @default(0)
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  images      GalleryImage[]
+
+  @@index([eventId])
+  @@map("galleries")
+}
+
+model GalleryImage {
+  id          String   @id @default(cuid())
+  url         String
+  thumbnail   String?
+  caption     String?
+  altText     String?
+  displayOrder Int     @default(0)
+  galleryId   String
+  gallery     Gallery  @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+
+  @@index([galleryId])
+  @@map("gallery_images")
+}
+
+model Video {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  thumbnail   String?
+  url         String?
+  youtubeUrl  String?
+  vimeoUrl    String?
+  featured    Boolean  @default(false)
+  displayOrder Int     @default(0)
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@map("videos")
+}
+
+model ScheduleItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startTime   String?
+  endTime     String?
+  date        DateTime?
+  location    String?
+  mapUrl      String?
+  image       String?
+  displayOrder Int     @default(0)
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@map("schedule_items")
+}
+
+model WeddingPartyMember {
+  id          String   @id @default(cuid())
+  name        String
+  role        WeddingRole
+  profileImage String?
+  bio         String?
+  socialLinks Json?
+  displayOrder Int     @default(0)
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@map("wedding_party")
+}
+
+enum WeddingRole {
+  BRIDE
+  GROOM
+  BRIDESMAID
+  MAID_OF_HONOR
+  GROOMSMAN
+  BEST_MAN
+  FLOWER_GIRL
+  RING_BEARER
+  PARENTS
+  FAMILY
+  OTHER
+}
+
+model RSVP {
+  id                String   @id @default(cuid())
+  guestName         String
+  email             String?
+  phone             String?
+  status            RSVPStatus @default(PENDING)
+  numberOfGuests    Int      @default(1)
+  guestNames        String?
+  message           String?
+  dietary           String?
+  specialRequests   String?
+  rsvpDate          DateTime @default(now())
+  eventId           String
+  event             Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId            String?
+  user              User?    @relation(fields: [userId], references: [id])
+
+  @@unique([eventId, email])
+  @@index([eventId])
+  @@index([status])
+  @@map("rsvps")
+}
+
+enum RSVPStatus {
+  ATTENDING
+  MAYBE
+  NOT_ATTENDING
+  PENDING
+}
+
+model GuestbookMessage {
+  id          String   @id @default(cuid())
+  guestName   String
+  message     String
+  photo       String?
+  approved    Boolean  @default(false)
+  pinned      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+
+  @@index([eventId])
+  @@index([approved])
+  @@map("guestbook_messages")
+}
+
+model SongSuggestion {
+  id          String   @id @default(cuid())
+  guestName   String
+  songTitle   String
+  artist      String?
+  youtubeUrl  String?
+  spotifyUrl  String?
+  message     String?
+  approved    Boolean  @default(false)
+  pinned      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+
+  votes       SongVote[]
+
+  @@index([eventId])
+  @@map("song_suggestions")
+}
+
+model SongVote {
+  id          String   @id @default(cuid())
+  songId      String
+  song        SongSuggestion @relation(fields: [songId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@unique([songId, userId])
+  @@map("song_votes")
+}
