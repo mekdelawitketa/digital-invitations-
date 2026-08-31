@@ -1,12 +1,12 @@
-import { PrismaClient, EventTypeKey, RSVPStatus } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // 1. Create Event Types
   console.log('🌱 Creating event types...');
   
+  // 1. Create Event Types
   await prisma.eventType.upsert({
     where: { key: 'wedding' },
     update: {},
@@ -174,7 +174,7 @@ async function main() {
       eventId: wedding.id,
       name: 'John Doe',
       email: 'john@example.com',
-      status: RSVPStatus.attending,
+      status: 'attending',
       numberOfGuests: 2,
       message: 'So excited for you both! 🎉'
     }
