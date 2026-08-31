@@ -1,7 +1,7 @@
 // frontend/src/routes/AppRoutes.jsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Login, Register, ProtectedRoute, AdminRoute, OwnerRoute } from '../features/auth';
-
+import { InvitationPage } from '../features/invitation';
 // Placeholder components (we'll create these later)
 const Home = () => <div>Home Page</div>;
 const MyEvents = () => <div>My Events</div>;
@@ -19,6 +19,7 @@ export const AppRoutes = () => {
         <Route path="/invitation/:slug" element={<InvitationPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/invitation/:slug" element={<InvitationPage />} />
 
         {/* Protected Routes - Auth required */}
         <Route element={<ProtectedRoute />}>
