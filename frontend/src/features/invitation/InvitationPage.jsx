@@ -9,6 +9,7 @@ import { Location } from './Location';
 import { Schedule } from './Schedule';
 import { Gallery } from './Gallery';
 import { WeddingParty } from './WeddingParty';
+import { RSVPForm } from './RSVPForm';
 
 export const InvitationPage = () => {
   const { slug } = useParams();
@@ -80,6 +81,22 @@ export const InvitationPage = () => {
       {(event.venueName || event.venueAddress) && (
         <Location event={event} />
       )}
+
+      {/* RSVP Section */}
+      <section className="py-16 px-4 bg-gray-50" id="rsvp">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+              RSVP
+            </h2>
+            <div className="w-20 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto" />
+            <p className="text-gray-500 mt-4">
+              Please let us know if you can attend
+            </p>
+          </div>
+          <RSVPForm eventId={event.id} />
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="py-8 text-center text-gray-500 text-sm border-t">
