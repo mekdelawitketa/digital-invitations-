@@ -1,4 +1,4 @@
-// frontend/src/features/owner/RSVPManager.jsx
+// frontend/src/features/rsvp/RSVPManager.jsx
 import { useParams, Link } from 'react-router-dom';
 import { RSVPStats } from './RSVPStats';
 import { RSVPList } from './RSVPList';

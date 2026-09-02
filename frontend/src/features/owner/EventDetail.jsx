@@ -77,7 +77,7 @@ export const EventDetail = () => {
             </span>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Link
             to={`/invitation/${event.slug}`}
             target="_blank"
@@ -103,7 +103,9 @@ export const EventDetail = () => {
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
-          <div className="text-2xl font-bold text-gray-800">0</div>
+          <div className="text-2xl font-bold text-gray-800">
+            {event.rsvps?.length || 0}
+          </div>
           <div className="text-sm text-gray-500">RSVPs</div>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">

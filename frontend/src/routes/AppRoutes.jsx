@@ -3,7 +3,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Login, Register, ProtectedRoute, AdminRoute, OwnerRoute } from '../features/auth';
 import { InvitationPage } from '../features/invitation';
 import { OwnerDashboard, MyEvents, EventEditor, EventDetail } from '../features/owner';
-import { AdminDashboard } from '../features/admin';
+import { AdminDashboard, AdminUsers, AdminEvents } from '../features/admin';
+import { RSVPManager } from '../features/rsvp';
+import { GalleryManager } from '../features/gallery';
 
 // Home Page Component (we'll create this later)
 const Home = () => (
@@ -41,10 +43,10 @@ export const AppRoutes = () => {
             <Route path="/my-events/create" element={<EventEditor />} />
             <Route path="/my-events/:id" element={<EventDetail />} />
             <Route path="/my-events/:id/edit" element={<EventEditor />} />
-            <Route path="/my-events/:id/gallery" element={<div>Gallery Manager</div>} />
+            <Route path="/my-events/:id/gallery" element={<GalleryManager />} />
             <Route path="/my-events/:id/videos" element={<div>Videos Manager</div>} />
             <Route path="/my-events/:id/schedule" element={<div>Schedule Manager</div>} />
-            <Route path="/my-events/:id/rsvp" element={<div>RSVP Manager</div>} />
+            <Route path="/my-events/:id/rsvp" element={<RSVPManager />} />
             <Route path="/my-events/:id/guestbook" element={<div>Guestbook Manager</div>} />
             <Route path="/my-events/:id/songs" element={<div>Song Suggestions</div>} />
             <Route path="/my-events/:id/wedding-party" element={<div>Wedding Party</div>} />
@@ -52,14 +54,14 @@ export const AppRoutes = () => {
           </Route>
 
           {/* Admin Routes */}
-         <Route element={<AdminRoute />}>
-  <Route path="/admin/dashboard" element={<AdminDashboard />} />
-  <Route path="/admin/users" element={<AdminUsers />} />
-  <Route path="/admin/events" element={<AdminEvents />} />
-  <Route path="/admin/themes" element={<div>Admin Themes</div>} />
-  <Route path="/admin/media" element={<div>Admin Media</div>} />
-  <Route path="/admin/settings" element={<div>Admin Settings</div>} />
-</Route>
+          <Route element={<AdminRoute />}>
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/events" element={<AdminEvents />} />
+            <Route path="/admin/themes" element={<div>Admin Themes</div>} />
+            <Route path="/admin/media" element={<div>Admin Media</div>} />
+            <Route path="/admin/settings" element={<div>Admin Settings</div>} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>
