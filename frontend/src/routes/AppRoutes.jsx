@@ -6,6 +6,7 @@ import { OwnerDashboard, MyEvents, EventEditor, EventDetail } from '../features/
 import { AdminDashboard, AdminUsers, AdminEvents } from '../features/admin';
 import { RSVPManager } from '../features/rsvp';
 import { GalleryManager } from '../features/gallery';
+import { ScheduleManager } from '../features/schedule';
 
 // Home Page Component (we'll create this later)
 const Home = () => (
