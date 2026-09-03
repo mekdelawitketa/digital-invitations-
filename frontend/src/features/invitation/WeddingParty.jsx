@@ -1,55 +1,88 @@
-// frontend/src/features/invitation/Schedule.jsx
+// frontend/src/features/invitation/WeddingParty.jsx
+import React from 'react';
 
-export const Schedule = ({ schedules }) => {
-  if (!schedules || schedules.length === 0) return null;
+export const WeddingParty = ({ members }) => {
+  if (!members || members.length === 0) {
+    return null;
+  }
 
-  const sortedSchedules = [...schedules].sort((a, b) => a.displayOrder - b.displayOrder);
+  // Group members by role
+  const grouped = members.reduce((acc, member) => {
+    if (!acc[member.role]) {
+      acc[member.role] = [];
+    }
+    acc[member.role].push(member);
+    return acc;
+  }, {});
+
+  // Order roles
+  const roleOrder = [
+    'Bride',
+    'Groom',
+    'Maid of Honor',
+    'Best Man',
+    'Bridesmaid',
+    'Groomsman',
+    'Flower Girl',
+    'Ring Bearer',
+    'Parents',
+    'Family',
+    'Other'
+  ];
+
+  const sortedRoles = Object.keys(grouped).sort((a, b) => {
+    const indexA = roleOrder.indexOf(a);
+    const indexB = roleOrder.indexOf(b);
+    if (indexA === -1 && indexB === -1) return 0;
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+    return indexA - indexB;
+  });
 
   return (
-    <section className="py-16 px-4 bg-gray-50">
-      <div className="max-w-4xl mx-auto">
+    <section className="py-16 px-4 bg-white">
+      <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-            Event Schedule
+            Wedding Party
           </h2>
           <div className="w-20 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto" />
         </div>
 
-        <div className="space-y-4">
-          {sortedSchedules.map((item, index) => (
-            <div
-              key={item.id}
-              className="bg-white rounded-xl shadow-md p-4 md:p-6 flex flex-col md:flex-row md:items-center gap-4"
-            >
-              <div className="md:w-48 flex-shrink-0">
-                <div className="text-sm font-medium text-blue-600">
-                  {item.date && new Date(item.date).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                  })}
+        {sortedRoles.map((role) => (
+          <div key={role} className="mb-8">
+            <h3 className="text-xl font-semibold text-gray-700 mb-4 text-center">
+              {role}s
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {grouped[role].map((member) => (
+                <div
+                  key={member.id}
+                  className="bg-gray-50 rounded-xl p-4 text-center hover:shadow-md transition-shadow"
+                >
+                  {member.profileImage ? (
+                    <img
+                      src={member.profileImage}
+                      alt={member.name}
+                      className="w-20 h-20 rounded-full mx-auto object-cover mb-3"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full mx-auto bg-gradient-to-r from-pink-300 to-purple-300 flex items-center justify-center text-3xl text-white mb-3">
+                      {member.name.charAt(0)}
+                    </div>
+                  )}
+                  <p className="font-medium text-gray-800">{member.name}</p>
+                  {member.bio && (
+                    <p className="text-sm text-gray-500">{member.bio}</p>
+                  )}
                 </div>
-                <div className="text-sm text-gray-500">
-                  {item.startTime} {item.endTime && `- ${item.endTime}`}
-                </div>
-              </div>
-
-              <div className="flex-1">
-                <h4 className="font-semibold text-gray-800">{item.title}</h4>
-                {item.description && (
-                  <p className="text-gray-600 text-sm">{item.description}</p>
-                )}
-                {item.location && (
-                  <p className="text-gray-500 text-sm mt-1">📍 {item.location}</p>
-                )}
-              </div>
-
-              <div className="text-2xl text-gray-300 hidden md:block">
-                {index < sortedSchedules.length - 1 ? '↓' : '🎯'}
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </section>
   );
 };
+
+export default WeddingParty;
