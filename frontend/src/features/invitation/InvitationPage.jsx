@@ -9,9 +9,9 @@ import { Location } from './Location';
 import { Schedule } from './Schedule';
 import { Gallery } from './Gallery';
 import { WeddingParty } from './WeddingParty';
-import { RSVPForm } from './RSVPForm';
-import { SongForm } from './SongForm';
-import { GuestbookForm } from './GuestbookForm';
+import { RSVPForm } from '../rsvp/RSVPForm';
+import { GuestbookForm } from '../guestbook/GuestbookForm';
+import { SongForm } from '../songs/SongForm';
 
 export const InvitationPage = () => {
   const { slug } = useParams();
@@ -128,5 +128,4 @@ export const InvitationPage = () => {
   );
 };
 
-// ✅ MAKE SURE THIS IS AT THE BOTTOM
 export default InvitationPage;
