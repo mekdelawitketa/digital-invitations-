@@ -7,7 +7,7 @@ export const SongManager = () => {
   const { id } = useParams();
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, pending, approved, rejected
+  const [filter, setFilter] = useState('all');
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
@@ -60,24 +60,6 @@ export const SongManager = () => {
     }
   };
 
-  const handlePin = async (songId) => {
-    try {
-      await songsAPI.pin(id, songId);
-      fetchSongs();
-    } catch (error) {
-      alert('Failed to pin song');
-    }
-  };
-
-  const handleUnpin = async (songId) => {
-    try {
-      await songsAPI.unpin(id, songId);
-      fetchSongs();
-    } catch (error) {
-      alert('Failed to unpin song');
-    }
-  };
-
   const handleDelete = async (songId) => {
     if (!confirm('Are you sure you want to delete this song suggestion?')) return;
     try {
@@ -103,10 +85,7 @@ export const SongManager = () => {
           <h1 className="text-3xl font-bold text-gray-800">Song Suggestions</h1>
           <p className="text-gray-500 mt-1">Manage and moderate song requests</p>
         </div>
-        <Link
-          to={`/my-events/${id}`}
-          className="text-blue-600 hover:text-blue-700"
-        >
+        <Link to={`/my-events/${id}`} className="text-blue-600 hover:text-blue-700">
           ← Back to Event
         </Link>
       </div>
@@ -168,9 +147,7 @@ export const SongManager = () => {
             <div className="text-6xl mb-4">🎵</div>
             <h3 className="text-xl font-semibold text-gray-700 mb-2">No Songs</h3>
             <p className="text-gray-500">
-              {filter === 'all' 
-                ? "No song suggestions yet." 
-                : `No ${filter} songs found.`}
+              {filter === 'all' ? "No song suggestions yet." : `No ${filter} songs found.`}
             </p>
           </div>
         ) : (
@@ -180,8 +157,6 @@ export const SongManager = () => {
               song={song}
               onApprove={() => handleApprove(song.id)}
               onReject={() => handleReject(song.id)}
-              onPin={() => handlePin(song.id)}
-              onUnpin={() => handleUnpin(song.id)}
               onDelete={() => handleDelete(song.id)}
             />
           ))
@@ -191,7 +166,6 @@ export const SongManager = () => {
   );
 };
 
-// Stat Card Component
 const StatCard = ({ label, value, icon, color = 'text-gray-600' }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
     <div className="text-2xl mb-1">{icon}</div>
@@ -200,8 +174,7 @@ const StatCard = ({ label, value, icon, color = 'text-gray-600' }) => (
   </div>
 );
 
-// Song Card Component
-const SongCard = ({ song, onApprove, onReject, onPin, onUnpin, onDelete }) => {
+const SongCard = ({ song, onApprove, onReject, onDelete }) => {
   const isPending = !song.approved && !song.rejected;
   const isApproved = song.approved;
   const isRejected = song.rejected;
@@ -216,9 +189,7 @@ const SongCard = ({ song, onApprove, onReject, onPin, onUnpin, onDelete }) => {
         <div className="flex-1">
           <div className="flex items-center gap-3 flex-wrap">
             <span className="font-semibold text-gray-800">{song.songTitle}</span>
-            {song.artist && (
-              <span className="text-gray-500 text-sm">by {song.artist}</span>
-            )}
+            {song.artist && <span className="text-gray-500 text-sm">by {song.artist}</span>}
             <span className={`text-xs px-2 py-0.5 rounded-full ${
               isPending ? 'bg-yellow-100 text-yellow-700' :
               isApproved ? 'bg-green-100 text-green-700' :
@@ -228,105 +199,38 @@ const SongCard = ({ song, onApprove, onReject, onPin, onUnpin, onDelete }) => {
                isApproved ? '✅ Approved' :
                '❌ Rejected'}
             </span>
-            {song.pinned && (
-              <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
-                📌 Pinned
-              </span>
-            )}
           </div>
-          <div className="mt-1 text-sm text-gray-500">
-            Suggested by: {song.guestName}
-          </div>
-          {song.message && (
-            <p className="mt-2 text-gray-600 text-sm">{song.message}</p>
-          )}
+          <div className="mt-1 text-sm text-gray-500">Suggested by: {song.guestName}</div>
+          {song.message && <p className="mt-2 text-gray-600 text-sm">{song.message}</p>}
           <div className="mt-2 flex items-center gap-4 text-sm">
             <span className="text-gray-500">❤️ {song.votes || 0} votes</span>
-            <span className="text-gray-400 text-xs">
-              {new Date(song.createdAt).toLocaleString()}
-            </span>
-          </div>
-          {/* Links */}
-          <div className="mt-2 flex flex-wrap gap-2">
-            {song.youtubeUrl && (
-              <a
-                href={song.youtubeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-red-600 hover:text-red-700 text-sm"
-              >
-                ▶️ YouTube
-              </a>
-            )}
-            {song.spotifyUrl && (
-              <a
-                href={song.spotifyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-green-600 hover:text-green-700 text-sm"
-              >
-                🎵 Spotify
-              </a>
-            )}
+            <span className="text-gray-400 text-xs">{new Date(song.createdAt).toLocaleString()}</span>
           </div>
         </div>
       </div>
 
-      {/* Actions */}
       <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
         {isPending && (
           <>
-            <button
-              onClick={onApprove}
-              className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-green-700 transition-colors"
-            >
+            <button onClick={onApprove} className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-green-700 transition-colors">
               ✅ Approve
             </button>
-            <button
-              onClick={onReject}
-              className="bg-red-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-red-700 transition-colors"
-            >
+            <button onClick={onReject} className="bg-red-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-red-700 transition-colors">
               ❌ Reject
             </button>
           </>
         )}
         {isApproved && (
-          <>
-            {song.pinned ? (
-              <button
-                onClick={onUnpin}
-                className="bg-purple-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-purple-700 transition-colors"
-              >
-                📌 Unpin
-              </button>
-            ) : (
-              <button
-                onClick={onPin}
-                className="bg-gray-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-gray-700 transition-colors"
-              >
-                📌 Pin
-              </button>
-            )}
-            <button
-              onClick={onReject}
-              className="bg-red-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-red-700 transition-colors"
-            >
-              ❌ Reject
-            </button>
-          </>
+          <button onClick={onReject} className="bg-red-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-red-700 transition-colors">
+            ❌ Reject
+          </button>
         )}
         {isRejected && (
-          <button
-            onClick={onApprove}
-            className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-green-700 transition-colors"
-          >
+          <button onClick={onApprove} className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-green-700 transition-colors">
             ✅ Approve
           </button>
         )}
-        <button
-          onClick={onDelete}
-          className="bg-red-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-red-700 transition-colors"
-        >
+        <button onClick={onDelete} className="bg-red-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-red-700 transition-colors">
           🗑️ Delete
         </button>
       </div>

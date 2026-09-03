@@ -35,22 +35,6 @@ export const songsAPI = {
   },
 
   /**
-   * Vote on a song (public)
-   */
-  vote: async (songId) => {
-    const response = await apiClient.post(`/songs/${songId}/vote`);
-    return response.data;
-  },
-
-  /**
-   * Unvote on a song (public)
-   */
-  unvote: async (songId) => {
-    const response = await apiClient.delete(`/songs/${songId}/vote`);
-    return response.data;
-  },
-
-  /**
    * Delete a song suggestion (owner)
    */
   delete: async (eventId, songId) => {
@@ -63,22 +47,6 @@ export const songsAPI = {
    */
   getStats: async (eventId) => {
     const response = await apiClient.get(`/events/${eventId}/songs/stats`);
-    return response.data;
-  },
-
-  /**
-   * Pin a song to the top (owner)
-   */
-  pin: async (eventId, songId) => {
-    const response = await apiClient.put(`/events/${eventId}/songs/${songId}/pin`);
-    return response.data;
-  },
-
-  /**
-   * Unpin a song (owner)
-   */
-  unpin: async (eventId, songId) => {
-    const response = await apiClient.put(`/events/${eventId}/songs/${songId}/unpin`);
     return response.data;
   },
 };

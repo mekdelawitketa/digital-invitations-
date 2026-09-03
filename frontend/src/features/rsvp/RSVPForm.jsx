@@ -1,4 +1,4 @@
-// frontend/src/features/invitation/RSVPForm.jsx
+// frontend/src/features/rsvp/RSVPForm.jsx
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
