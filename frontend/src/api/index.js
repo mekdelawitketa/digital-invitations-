@@ -8,4 +8,4 @@ export { rsvpAPI } from './rsvp';
 export { guestbookAPI } from './guestbook';
 export { songsAPI } from './songs';
 export { scheduleAPI } from './schedule';
-export { weddingPartyAPI } from './weddingParty';
+// export { weddingPartyAPI } from './weddingParty';

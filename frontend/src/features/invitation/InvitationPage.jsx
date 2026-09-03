@@ -1,335 +1,132 @@
-// frontend/src/features/songs/SongManager.jsx
+// frontend/src/features/invitation/InvitationPage.jsx
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { songsAPI } from '../../api/songs';
+import { useParams } from 'react-router-dom';
+import { eventsAPI } from '../../api/events';
+import { Hero } from './Hero';
+import { EventInfo } from './EventInfo';
+import { EventStory } from './EventStory';
+import { Location } from './Location';
+import { Schedule } from './Schedule';
+import { Gallery } from './Gallery';
+import { WeddingParty } from './WeddingParty';
+import { RSVPForm } from './RSVPForm';
+import { SongForm } from './SongForm';
+import { GuestbookForm } from './GuestbookForm';
 
-export const SongManager = () => {
-  const { id } = useParams();
-  const [songs, setSongs] = useState([]);
+export const InvitationPage = () => {
+  const { slug } = useParams();
+  const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, pending, approved, rejected
-  const [stats, setStats] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchSongs();
-    fetchStats();
-  }, [id, filter]);
+    const fetchEvent = async () => {
+      setLoading(true);
+      try {
+        const response = await eventsAPI.getBySlug(slug);
+        setEvent(response.data);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Event not found');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchSongs = async () => {
-    setLoading(true);
-    try {
-      const params = {};
-      if (filter === 'pending') params.approved = false;
-      if (filter === 'approved') params.approved = true;
-      if (filter === 'rejected') params.rejected = true;
-      const response = await songsAPI.getByEvent(id, params);
-      setSongs(response.data || []);
-    } catch (error) {
-      console.error('Failed to fetch songs:', error);
-    } finally {
-      setLoading(false);
+    if (slug) {
+      fetchEvent();
     }
-  };
+  }, [slug]);
 
-  const fetchStats = async () => {
-    try {
-      const response = await songsAPI.getStats(id);
-      setStats(response.data);
-    } catch (error) {
-      console.error('Failed to fetch stats:', error);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-500">Loading invitation...</div>
+      </div>
+    );
+  }
 
-  const handleApprove = async (songId) => {
-    try {
-      await songsAPI.approve(id, songId);
-      fetchSongs();
-      fetchStats();
-    } catch (error) {
-      alert('Failed to approve song');
-    }
-  };
+  if (error || !event) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Event Not Found</h2>
+          <p className="text-gray-500">{error || 'This invitation does not exist.'}</p>
+        </div>
+      </div>
+    );
+  }
 
-  const handleReject = async (songId) => {
-    try {
-      await songsAPI.reject(id, songId);
-      fetchSongs();
-      fetchStats();
-    } catch (error) {
-      alert('Failed to reject song');
-    }
-  };
-
-  const handlePin = async (songId) => {
-    try {
-      await songsAPI.pin(id, songId);
-      fetchSongs();
-    } catch (error) {
-      alert('Failed to pin song');
-    }
-  };
-
-  const handleUnpin = async (songId) => {
-    try {
-      await songsAPI.unpin(id, songId);
-      fetchSongs();
-    } catch (error) {
-      alert('Failed to unpin song');
-    }
-  };
-
-  const handleDelete = async (songId) => {
-    if (!confirm('Are you sure you want to delete this song suggestion?')) return;
-    try {
-      await songsAPI.delete(id, songId);
-      fetchSongs();
-      fetchStats();
-    } catch (error) {
-      alert('Failed to delete song');
-    }
-  };
-
-  const filterCounts = {
-    all: songs.length,
-    pending: songs.filter(s => !s.approved && !s.rejected).length,
-    approved: songs.filter(s => s.approved).length,
-    rejected: songs.filter(s => s.rejected).length,
-  };
+  const showWeddingParty = event.typeKey === 'wedding';
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800">Song Suggestions</h1>
-          <p className="text-gray-500 mt-1">Manage and moderate song requests</p>
-        </div>
-        <Link
-          to={`/my-events/${id}`}
-          className="text-blue-600 hover:text-blue-700"
-        >
-          ← Back to Event
-        </Link>
-      </div>
-
-      {/* Stats */}
-      {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <StatCard label="Total Songs" value={stats.total || 0} icon="🎵" />
-          <StatCard label="Pending" value={stats.pending || 0} icon="⏳" color="text-yellow-600" />
-          <StatCard label="Approved" value={stats.approved || 0} icon="✅" color="text-green-600" />
-          <StatCard label="Rejected" value={stats.rejected || 0} icon="❌" color="text-red-600" />
-        </div>
+    <div className="min-h-screen bg-white">
+      <Hero event={event} />
+      <EventInfo event={event} />
+      
+      {event.stories && event.stories.length > 0 && (
+        <EventStory stories={event.stories} />
+      )}
+      
+      {event.albums && event.albums.length > 0 && (
+        <Gallery albums={event.albums} />
+      )}
+      
+      {showWeddingParty && event.weddingParty && event.weddingParty.length > 0 && (
+        <WeddingParty members={event.weddingParty} />
+      )}
+      
+      {event.schedules && event.schedules.length > 0 && (
+        <Schedule schedules={event.schedules} />
+      )}
+      
+      {(event.venueName || event.venueAddress) && (
+        <Location event={event} />
       )}
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-            filter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          All ({filterCounts.all})
-        </button>
-        <button
-          onClick={() => setFilter('pending')}
-          className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-            filter === 'pending' ? 'bg-yellow-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          ⏳ Pending ({filterCounts.pending})
-        </button>
-        <button
-          onClick={() => setFilter('approved')}
-          className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-            filter === 'approved' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          ✅ Approved ({filterCounts.approved})
-        </button>
-        <button
-          onClick={() => setFilter('rejected')}
-          className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-            filter === 'rejected' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          ❌ Rejected ({filterCounts.rejected})
-        </button>
-      </div>
-
-      {/* Songs List */}
-      <div className="space-y-4">
-        {loading ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-            <div className="text-gray-500">Loading songs...</div>
+      {/* RSVP Section */}
+      <section className="py-16 px-4 bg-gray-50" id="rsvp">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">RSVP</h2>
+            <div className="w-20 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto" />
+            <p className="text-gray-500 mt-4">Please let us know if you can attend</p>
           </div>
-        ) : songs.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-            <div className="text-6xl mb-4">🎵</div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No Songs</h3>
-            <p className="text-gray-500">
-              {filter === 'all' 
-                ? "No song suggestions yet." 
-                : `No ${filter} songs found.`}
-            </p>
-          </div>
-        ) : (
-          songs.map((song) => (
-            <SongCard
-              key={song.id}
-              song={song}
-              onApprove={() => handleApprove(song.id)}
-              onReject={() => handleReject(song.id)}
-              onPin={() => handlePin(song.id)}
-              onUnpin={() => handleUnpin(song.id)}
-              onDelete={() => handleDelete(song.id)}
-            />
-          ))
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Stat Card Component
-const StatCard = ({ label, value, icon, color = 'text-gray-600' }) => (
-  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
-    <div className="text-2xl mb-1">{icon}</div>
-    <p className={`text-2xl font-bold ${color}`}>{value}</p>
-    <p className="text-xs text-gray-500">{label}</p>
-  </div>
-);
-
-// Song Card Component
-const SongCard = ({ song, onApprove, onReject, onPin, onUnpin, onDelete }) => {
-  const isPending = !song.approved && !song.rejected;
-  const isApproved = song.approved;
-  const isRejected = song.rejected;
-
-  return (
-    <div className={`bg-white rounded-xl shadow-sm border p-5 ${
-      isPending ? 'border-yellow-200 bg-yellow-50/30' :
-      isApproved ? 'border-green-200' :
-      'border-red-200 bg-red-50/30'
-    }`}>
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="font-semibold text-gray-800">{song.songTitle}</span>
-            {song.artist && (
-              <span className="text-gray-500 text-sm">by {song.artist}</span>
-            )}
-            <span className={`text-xs px-2 py-0.5 rounded-full ${
-              isPending ? 'bg-yellow-100 text-yellow-700' :
-              isApproved ? 'bg-green-100 text-green-700' :
-              'bg-red-100 text-red-700'
-            }`}>
-              {isPending ? '⏳ Pending' :
-               isApproved ? '✅ Approved' :
-               '❌ Rejected'}
-            </span>
-            {song.pinned && (
-              <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
-                📌 Pinned
-              </span>
-            )}
-          </div>
-          <div className="mt-1 text-sm text-gray-500">
-            Suggested by: {song.guestName}
-          </div>
-          {song.message && (
-            <p className="mt-2 text-gray-600 text-sm">{song.message}</p>
-          )}
-          <div className="mt-2 flex items-center gap-4 text-sm">
-            <span className="text-gray-500">❤️ {song.votes || 0} votes</span>
-            <span className="text-gray-400 text-xs">
-              {new Date(song.createdAt).toLocaleString()}
-            </span>
-          </div>
-          {/* Links */}
-          <div className="mt-2 flex flex-wrap gap-2">
-            {song.youtubeUrl && (
-              <a
-                href={song.youtubeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-red-600 hover:text-red-700 text-sm"
-              >
-                ▶️ YouTube
-              </a>
-            )}
-            {song.spotifyUrl && (
-              <a
-                href={song.spotifyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-green-600 hover:text-green-700 text-sm"
-              >
-                🎵 Spotify
-              </a>
-            )}
-          </div>
+          <RSVPForm eventId={event.id} />
         </div>
-      </div>
+      </section>
 
-      {/* Actions */}
-      <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
-        {isPending && (
-          <>
-            <button
-              onClick={onApprove}
-              className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-green-700 transition-colors"
-            >
-              ✅ Approve
-            </button>
-            <button
-              onClick={onReject}
-              className="bg-red-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-red-700 transition-colors"
-            >
-              ❌ Reject
-            </button>
-          </>
-        )}
-        {isApproved && (
-          <>
-            {song.pinned ? (
-              <button
-                onClick={onUnpin}
-                className="bg-purple-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-purple-700 transition-colors"
-              >
-                📌 Unpin
-              </button>
-            ) : (
-              <button
-                onClick={onPin}
-                className="bg-gray-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-gray-700 transition-colors"
-              >
-                📌 Pin
-              </button>
-            )}
-            <button
-              onClick={onReject}
-              className="bg-red-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-red-700 transition-colors"
-            >
-              ❌ Reject
-            </button>
-          </>
-        )}
-        {isRejected && (
-          <button
-            onClick={onApprove}
-            className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-green-700 transition-colors"
-          >
-            ✅ Approve
-          </button>
-        )}
-        <button
-          onClick={onDelete}
-          className="bg-red-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-red-700 transition-colors"
-        >
-          🗑️ Delete
-        </button>
-      </div>
+      {/* Guestbook Section */}
+      <section className="py-16 px-4 bg-white" id="guestbook">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Guestbook</h2>
+            <div className="w-20 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto" />
+            <p className="text-gray-500 mt-4">Leave your wishes and memories</p>
+          </div>
+          <GuestbookForm eventId={event.id} />
+        </div>
+      </section>
+
+      {/* Song Suggestions Section */}
+      <section className="py-16 px-4 bg-gray-50" id="songs">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Song Suggestions</h2>
+            <div className="w-20 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto" />
+            <p className="text-gray-500 mt-4">Suggest songs for the celebration playlist</p>
+          </div>
+          <SongForm eventId={event.id} />
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-8 text-center text-gray-500 text-sm border-t">
+        <p>© {new Date().getFullYear()} Digital Invitations. All rights reserved.</p>
+        <p className="mt-1">Made with ❤️</p>
+      </footer>
     </div>
   );
 };
+
+// ✅ MAKE SURE THIS IS AT THE BOTTOM
+export default InvitationPage;

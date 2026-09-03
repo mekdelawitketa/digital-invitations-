@@ -6,4 +6,4 @@ export { SongSuggestions } from './SongSuggestions';
 export { SongCard } from './SongCard';
 
 // Owner components (for moderation)
-export { SongManager } from './SongManager';
+// export { SongManager } from './SongManager';  // Uncomment after creating the file
