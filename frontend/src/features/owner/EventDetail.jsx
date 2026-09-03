@@ -199,3 +199,4 @@ const ManagementCard = ({ title, icon, description, link }) => (
     </div>
   </Link>
 );
+export default EventDetail;
