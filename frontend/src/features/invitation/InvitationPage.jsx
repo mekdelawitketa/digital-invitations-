@@ -7,7 +7,7 @@ import { EventInfo } from './EventInfo';
 import { EventStory } from './EventStory';
 import { Location } from './Location';
 import { Schedule } from './Schedule';
-import { Gallery } from './Gallery';
+import { Gallery } from '../gallery/Gallery'; // ✅ This import is correct
 import { WeddingParty } from './WeddingParty';
 import { RSVPForm } from '../rsvp/RSVPForm';
 import { GuestbookForm } from '../guestbook/GuestbookForm';

@@ -105,3 +105,6 @@ export const Gallery = ({ albums }) => {
     </section>
   );
 };
+
+// ✅ ADD THIS DEFAULT EXPORT - This is what was missing!
+export default Gallery;
