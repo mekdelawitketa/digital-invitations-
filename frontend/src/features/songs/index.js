@@ -7,3 +7,6 @@ export { SongCard } from './SongCard';
 
 // Owner components (for moderation)
 export { SongManager } from './SongManager';
+
+// If you have a default export
+// export { default } from './SongManager';

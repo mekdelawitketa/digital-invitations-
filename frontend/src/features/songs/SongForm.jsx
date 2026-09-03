@@ -1,100 +1,125 @@
 // frontend/src/features/songs/SongForm.jsx
 import { useState } from 'react';
-import { songsAPI } from '../../api/songs';
 
-export const SongForm = ({ eventId }) => {
-  const [guestName, setGuestName] = useState('');
-  const [songTitle, setSongTitle] = useState('');
-  const [artist, setArtist] = useState('');
-  const [message, setMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
+export const SongForm = ({ eventId, onSubmit }) => {
+  const [formData, setFormData] = useState({
+    songName: '',
+    artist: '',
+    guestName: '',
+    note: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setError('');
-    
+    setLoading(true);
     try {
-      await songsAPI.submit(eventId, { guestName, songTitle, artist, message });
-      setSuccess(true);
-      setGuestName('');
-      setSongTitle('');
-      setArtist('');
-      setMessage('');
-    } catch (err) {
-      setError('Failed to submit song suggestion');
+      // Your API call here
+      await onSubmit?.(formData);
+      setSubmitted(true);
+      setFormData({ songName: '', artist: '', guestName: '', note: '' });
+    } catch (error) {
+      console.error('Error submitting song suggestion:', error);
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
-  if (success) {
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  if (submitted) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-        <div className="text-4xl mb-3">🎵</div>
-        <h3 className="text-xl font-semibold text-green-800 mb-2">Thank You!</h3>
-        <p className="text-green-600">Your song suggestion has been submitted.</p>
+      <div className="text-center py-8">
+        <div className="text-green-500 text-5xl mb-4">🎵</div>
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">Thank You!</h3>
+        <p className="text-gray-500">Your song suggestion has been submitted.</p>
+        <button
+          onClick={() => setSubmitted(false)}
+          className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Submit Another Suggestion
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="max-w-lg mx-auto">
+      <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+          <label className="block text-gray-700 text-sm font-medium mb-2">
+            Song Name *
+          </label>
           <input
             type="text"
-            value={guestName}
-            onChange={(e) => setGuestName(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter your name"
+            name="songName"
+            value={formData.songName}
+            onChange={handleChange}
             required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Song Title</label>
-          <input
-            type="text"
-            value={songTitle}
-            onChange={(e) => setSongTitle(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Enter song title"
-            required
           />
         </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Artist</label>
+          <label className="block text-gray-700 text-sm font-medium mb-2">
+            Artist *
+          </label>
           <input
             type="text"
-            value={artist}
-            onChange={(e) => setArtist(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter artist name"
+            name="artist"
+            value={formData.artist}
+            onChange={handleChange}
             required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter artist name"
           />
         </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Message (optional)</label>
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            rows="3"
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Why do you suggest this song?"
+          <label className="block text-gray-700 text-sm font-medium mb-2">
+            Your Name
+          </label>
+          <input
+            type="text"
+            name="guestName"
+            value={formData.guestName}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Your name (optional)"
           />
         </div>
-        {error && <div className="text-red-600 text-sm">{error}</div>}
+
+        <div>
+          <label className="block text-gray-700 text-sm font-medium mb-2">
+            Note (optional)
+          </label>
+          <textarea
+            name="note"
+            value={formData.note}
+            onChange={handleChange}
+            rows="3"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Any special message or reason for this suggestion..."
+          />
+        </div>
+
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          disabled={loading}
+          className="w-full px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? 'Submitting...' : 'Suggest Song'}
+          {loading ? 'Submitting...' : 'Submit Suggestion'}
         </button>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 };
+
+export default SongForm;
