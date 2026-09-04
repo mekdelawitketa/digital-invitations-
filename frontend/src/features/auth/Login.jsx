@@ -1,32 +1,44 @@
 // frontend/src/features/auth/Login.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { loginSchema } from '../../utils/validators';
-import { authAPI } from '../../api/auth';
 import { useAuthStore } from '../../store/authStore';
 
 export const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuthStore();
+  const [email, setEmail] = useState('admin@example.com');
+  const [password, setPassword] = useState('admin123');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(loginSchema),
-  });
-
-  const onSubmit = async (data) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setIsLoading(true);
     setError('');
+
     try {
-      const response = await authAPI.login(data);
-      const { user, token } = response.data;
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      console.log('Login response:', data); // Check what we get
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // The response has data.data.user and data.data.token
+      const user = data.data?.user;
+      const token = data.data?.token;
+
+      if (!user || !token) {
+        throw new Error('Invalid response from server');
+      }
+
+      // Save user and token
       login(user, token);
       
       // Redirect based on role
@@ -36,7 +48,7 @@ export const Login = () => {
         navigate('/my-events');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      setError(err.message || 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -46,44 +58,32 @@ export const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">
-            Welcome Back
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Sign in to manage your events
-          </p>
+          <h2 className="text-3xl font-extrabold text-gray-900">Welcome Back</h2>
+          <p className="mt-2 text-sm text-gray-600">Sign in to manage your events</p>
         </div>
 
         <div className="mt-8 bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Email Address
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Email Address</label>
               <input
                 type="email"
-                {...register('email')}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="admin@example.com"
               />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Password</label>
               <input
                 type="password"
-                {...register('password')}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="••••••••"
               />
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-              )}
             </div>
 
             {error && (
@@ -101,26 +101,14 @@ export const Login = () => {
             </button>
 
             <div className="flex items-center justify-between text-sm">
-              <Link
-                to="/forgot-password"
-                className="text-blue-600 hover:text-blue-500"
-              >
-                Forgot password?
-              </Link>
-              <Link
-                to="/register"
-                className="text-blue-600 hover:text-blue-500"
-              >
-                Create account
-              </Link>
+              <Link to="/forgot-password" className="text-blue-600 hover:text-blue-500">Forgot password?</Link>
+              <Link to="/register" className="text-blue-600 hover:text-blue-500">Create account</Link>
             </div>
           </form>
         </div>
 
         <div className="mt-4 text-center">
-          <p className="text-xs text-gray-500">
-            Demo: admin@example.com / admin123
-          </p>
+          <p className="text-xs text-gray-500">Demo: admin@example.com / admin123</p>
         </div>
       </div>
     </div>

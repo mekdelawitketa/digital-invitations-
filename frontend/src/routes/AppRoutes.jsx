@@ -1,8 +1,9 @@
 // frontend/src/routes/AppRoutes.jsx
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Login, Register, ProtectedRoute } from '../features/auth';
 import { InvitationPage } from '../features/invitation';
-import { MyEvents, EventEditor, EventDetail } from '../features/owner';
+import { MyEvents, EventEditor, EventDetail, OwnerDashboard } from '../features/owner';
+import { AdminDashboard } from '../features/admin';
 
 // Home Component
 const Home = () => (
@@ -33,7 +34,9 @@ export const AppRoutes = () => {
       
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
+        {/* Owner Routes */}
         <Route path="/my-events" element={<MyEvents />} />
+        <Route path="/my-events/dashboard" element={<OwnerDashboard />} />
         <Route path="/my-events/create" element={<EventEditor />} />
         <Route path="/my-events/:id" element={<EventDetail />} />
         <Route path="/my-events/:id/edit" element={<EventEditor />} />
@@ -44,6 +47,11 @@ export const AppRoutes = () => {
         <Route path="/my-events/:id/wedding-party" element={<div>Wedding Party</div>} />
         <Route path="/my-events/:id/schedule" element={<div>Schedule Manager</div>} />
         <Route path="/my-events/:id/settings" element={<div>Event Settings</div>} />
+        
+        {/* Admin Routes */}
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<div>Admin Users</div>} />
+        <Route path="/admin/events" element={<div>Admin Events</div>} />
       </Route>
     </Routes>
   );
