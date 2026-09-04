@@ -14,8 +14,14 @@ const prisma = new PrismaClient();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-// ==================== MIDDLEWARE ====================
-app.use(cors());
+// ==================== CORS MIDDLEWARE (FIXED) ====================
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 app.use(express.json());
 
 // ==================== AUTH MIDDLEWARE ====================

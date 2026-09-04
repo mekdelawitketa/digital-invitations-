@@ -5,14 +5,16 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { eventsAPI } from '../../api/events';
 import { eventSchema } from '../../utils/validators';
-import { EventTypeKey, THEME_PRESETS } from '../../types';
+import { useAuthStore } from '../../store/authStore';
 
 export const EventEditor = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const isEdit = !!id;
 
   const {
@@ -28,7 +30,7 @@ export const EventEditor = () => {
       type: 'wedding',
       description: '',
       startDate: '',
-      timezone: 'UTC',
+      timezone: 'Africa/Addis_Ababa',
       venueName: '',
       venueAddress: '',
       isPublic: true,
@@ -65,11 +67,19 @@ export const EventEditor = () => {
   const onSubmit = async (data) => {
     setSaving(true);
     setError('');
+    setSuccess(false);
+    
     try {
-      // Add theme settings based on type
+      const themePresets = {
+        wedding: { primaryColor: '#D4AF37', secondaryColor: '#F5F5DC', font: 'Playfair Display' },
+        birthday: { primaryColor: '#FF6B6B', secondaryColor: '#FFE66D', font: 'Nunito' },
+        graduation: { primaryColor: '#2C3E50', secondaryColor: '#F1C40F', font: 'Lora' },
+      };
+
       const eventData = {
         ...data,
-        themeSettings: THEME_PRESETS[data.type] || THEME_PRESETS.wedding,
+        themeSettings: themePresets[data.type] || themePresets.wedding,
+        ownerId: user.id,
       };
 
       let response;
@@ -77,11 +87,20 @@ export const EventEditor = () => {
         response = await eventsAPI.update(id, eventData);
       } else {
         response = await eventsAPI.create(eventData);
+        console.log('Created event response:', response);
       }
 
-      navigate(`/my-events/${response.data.id}`);
+      setSuccess(true);
+      
+      // Redirect to my-events after success
+      setTimeout(() => {
+        navigate('/my-events');
+      }, 1500);
+      
     } catch (err) {
+      console.error('Error creating event:', err);
       setError(err.response?.data?.message || 'Failed to save event');
+      setSuccess(false);
     } finally {
       setSaving(false);
     }
@@ -101,6 +120,12 @@ export const EventEditor = () => {
         {isEdit ? 'Edit Event' : 'Create New Event'}
       </h1>
 
+      {success && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4">
+          ✅ Event {isEdit ? 'updated' : 'created'} successfully! Redirecting to My Events...
+        </div>
+      )}
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Title */}
         <div>
@@ -111,7 +136,7 @@ export const EventEditor = () => {
             type="text"
             {...register('title')}
             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Abraham & Sara Wedding"
+            placeholder="e.g. Abraham & Sara Wedding"
           />
           {errors.title && (
             <p className="text-sm text-red-600 mt-1">{errors.title.message}</p>
@@ -193,7 +218,7 @@ export const EventEditor = () => {
             type="text"
             {...register('venueName')}
             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Millennium Wedding Hall"
+            placeholder="e.g. Millennium Wedding Hall"
           />
         </div>
 
@@ -205,7 +230,7 @@ export const EventEditor = () => {
             type="text"
             {...register('venueAddress')}
             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Bole Road, Addis Ababa, Ethiopia"
+            placeholder="e.g. Bole Road, Addis Ababa"
           />
         </div>
 
@@ -247,42 +272,6 @@ export const EventEditor = () => {
           </button>
         </div>
       </form>
-
-      {/* Wedding Party Section (only for wedding events) */}
-      {selectedType === 'wedding' && isEdit && (
-        <div className="mt-8 pt-8 border-t border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            💒 Wedding Party
-          </h2>
-          <p className="text-gray-500 text-sm">
-            Add wedding party members in the event management page.
-          </p>
-          <Link
-            to={`/my-events/${id}/wedding-party`}
-            className="mt-3 inline-block text-blue-600 hover:text-blue-700"
-          >
-            Manage Wedding Party →
-          </Link>
-        </div>
-      )}
-
-      {/* Sections Management */}
-      {isEdit && (
-        <div className="mt-8 pt-8 border-t border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            📋 Event Sections
-          </h2>
-          <p className="text-gray-500 text-sm">
-            Enable or disable sections on your invitation page.
-          </p>
-          <Link
-            to={`/my-events/${id}/settings`}
-            className="mt-3 inline-block text-blue-600 hover:text-blue-700"
-          >
-            Manage Sections →
-          </Link>
-        </div>
-      )}
     </div>
   );
-};export default EventEditor;
+};

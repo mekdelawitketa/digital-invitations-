@@ -12,16 +12,31 @@ export const EventDetail = () => {
 
   useEffect(() => {
     const fetchEvent = async () => {
+      setLoading(true);
+      setError('');
       try {
+        console.log('Fetching event with ID:', id);
         const response = await eventsAPI.getById(id);
-        setEvent(response.data);
+        console.log('Event data:', response);
+        if (response.data) {
+          setEvent(response.data);
+        } else {
+          setError('Event not found');
+        }
       } catch (err) {
-        setError('Failed to load event');
+        console.error('Error fetching event:', err);
+        setError(err.response?.data?.message || 'Failed to load event');
       } finally {
         setLoading(false);
       }
     };
-    fetchEvent();
+    
+    if (id) {
+      fetchEvent();
+    } else {
+      setError('No event ID provided');
+      setLoading(false);
+    }
   }, [id]);
 
   const handleDelete = async () => {
@@ -45,8 +60,9 @@ export const EventDetail = () => {
   if (error || !event) {
     return (
       <div className="max-w-3xl mx-auto text-center py-12">
+        <div className="text-6xl mb-4">🔍</div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Event Not Found</h2>
-        <p className="text-gray-500">{error}</p>
+        <p className="text-gray-500">{error || 'This event does not exist.'}</p>
         <Link to="/my-events" className="text-blue-600 hover:text-blue-700 mt-4 inline-block">
           ← Back to My Events
         </Link>
@@ -199,4 +215,3 @@ const ManagementCard = ({ title, icon, description, link }) => (
     </div>
   </Link>
 );
-export default EventDetail;

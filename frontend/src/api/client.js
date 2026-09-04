@@ -8,10 +8,10 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // Important for cookies/sessions
+  withCredentials: false, // Important: Set to false
 });
 
-// Request interceptor - add token to every request
+// Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('auth_token');
@@ -23,14 +23,12 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor - handle 401 errors
+// Response interceptor
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Clear auth data and redirect to login
       localStorage.removeItem('auth_token');
-      localStorage.removeItem('auth_user');
       window.location.href = '/login';
     }
     return Promise.reject(error);

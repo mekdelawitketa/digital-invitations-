@@ -1,20 +1,25 @@
 // frontend/src/features/owner/MyEvents.jsx
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { eventsAPI } from '../../api/events';
 import { useAuthStore } from '../../store/authStore';
 
 export const MyEvents = () => {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, published, draft
+  const [filter, setFilter] = useState('all');
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
+      setLoading(true);
       try {
-        const response = await eventsAPI.getAll({ ownerId: user.id });
-        setEvents(response.data || []);
+        const response = await eventsAPI.getAll();
+        // Filter events by owner
+        const userEvents = response.data.filter(e => e.ownerId === user.id);
+        setEvents(userEvents);
       } catch (error) {
         console.error('Failed to fetch events:', error);
       } finally {
@@ -23,13 +28,17 @@ export const MyEvents = () => {
     };
 
     fetchEvents();
-  }, [user.id]);
+  }, [user.id, refresh]);
 
   const filteredEvents = events.filter((event) => {
     if (filter === 'published') return event.isPublished;
     if (filter === 'draft') return !event.isPublished;
     return true;
   });
+
+  const handleRefresh = () => {
+    setRefresh(prev => !prev);
+  };
 
   if (loading) {
     return (
@@ -46,12 +55,20 @@ export const MyEvents = () => {
           <h1 className="text-3xl font-bold text-gray-800">My Events</h1>
           <p className="text-gray-500 mt-1">Manage all your digital invitations</p>
         </div>
-        <Link
-          to="/my-events/create"
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
-        >
-          + Create New Event
-        </Link>
+        <div className="flex gap-3">
+          <button
+            onClick={handleRefresh}
+            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            🔄 Refresh
+          </button>
+          <Link
+            to="/my-events/create"
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+          >
+            + Create New Event
+          </Link>
+        </div>
       </div>
 
       {/* Filter Tabs */}
